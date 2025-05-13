@@ -189,7 +189,7 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="h-[500px] p-0">
-                  <MapView type="herd" herdId={selectedHerd} timeRange={timeRange} />
+                  <MapView type="herd" herdId={selectedHerd} timeRange={timeRange as [Date, Date]} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -203,7 +203,7 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="h-[500px] p-0">
-                  <MapView type="family" familyId={selectedFamily} timeRange={timeRange} />
+                  <MapView type="family" familyId={selectedFamily} timeRange={timeRange as [Date, Date]} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -234,7 +234,7 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="h-[400px] p-0">
-                    <MapView type="location-families" location={selectedLocation} timeRange={timeRange} />
+                    <MapView type="location-families" location={selectedLocation} timeRange={timeRange as [Date, Date]} />
                   </CardContent>
                 </Card>
                 <Card>
@@ -247,7 +247,7 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <EventsList location={selectedLocation} timeRange={timeRange} />
+                    <EventsList location={selectedLocation} timeRange={timeRange as [Date, Date]} />
                   </CardContent>
                 </Card>
               </div>
