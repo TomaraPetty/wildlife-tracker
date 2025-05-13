@@ -1,3 +1,8 @@
+### Wildlife Tracker
+
+## WildlifeTracker, a service that national parks use to track wildlife. 
+Rangers report observations about animal movements to our API, and we help them to understand this ingested data via our customized GUI that charts out different life events and visulizes the migration paths on a map. We also have charts to visualize the size of the families and herds over time. 
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
