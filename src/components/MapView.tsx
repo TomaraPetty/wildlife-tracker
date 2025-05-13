@@ -1,173 +1,147 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MapPin } from "lucide-react"
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import type { LatLngExpression } from "leaflet"
+import { findNearbyFamilies, getFamilyLocations, getHerdFamilies } from "@/lib/maps"
+import { mockFamilies } from "@/lib/maps"
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
+import { Icon } from "leaflet"
+import "leaflet/dist/leaflet.css"
 
-type MapViewProps = {
-  type: "herd" | "family" | "location-families" | "location-events"
+interface Family {
+  id: string
+  herdId: string
+  locations: Array<{
+    lat: number
+    lng: number
+    date: string
+  }>
+  size: number
+  healthRating: number
+}
+
+interface MapViewProps {
+  type: "herd" | "family" | "location-families"
   herdId?: string | null
   familyId?: string | null
   location?: { lat: number; lng: number } | null
-  timeRange: Date[]
+  timeRange?: [Date, Date]
 }
 
-export default function MapView({ type, herdId, familyId, location, timeRange }: MapViewProps) {
-  const mapRef = useRef<HTMLDivElement>(null)
+const MapViewComponent = (props: MapViewProps) => {
+  const icon = new Icon({
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  })
+
   const [isLoading, setIsLoading] = useState(true)
-
-  // Mock data for visualization
-  const mockHerdFamilies = [
-    { id: "Family A-1", color: "#FF5733", path: generateRandomPath(), events: generateRandomEvents() },
-    { id: "Family A-2", color: "#33FF57", path: generateRandomPath(), events: generateRandomEvents() },
-    { id: "Family A-3", color: "#3357FF", path: generateRandomPath(), events: generateRandomEvents() },
-  ]
-
-//   const mockFamilyPath = generateRandomPath()
-  const mockNearbyFamilies = [
-    { id: "Family A-1", herd: "Herd Alpha", distance: "2.3km", lastSeen: "2 days ago" },
-    { id: "Family B-2", herd: "Herd Beta", distance: "4.1km", lastSeen: "5 days ago" },
-    { id: "Family G-1", herd: "Herd Gamma", distance: "8.7km", lastSeen: "Today" },
-  ]
+  const [families, setFamilies] = useState<Family[]>([])
+  const [familyLocations, setFamilyLocations] = useState<Array<{ lat: number; lng: number; date: string }>>([])
 
   useEffect(() => {
-    // Simulate map loading
-    const timer = setTimeout(() => {
+    const loadData = async () => {
+      if (props.type === "location-families" && props.location) {
+        const nearbyFamilies = await findNearbyFamilies([props.location.lat, props.location.lng], 10)
+        setFamilies(nearbyFamilies)
+      } else if (props.type === "family" && props.familyId) {
+        const locations = getFamilyLocations(props.familyId)
+        setFamilyLocations(locations)
+      } else if (props.type === "herd" && props.herdId) {
+        const herdFamilies = getHerdFamilies(props.herdId)
+        setFamilies(herdFamilies)
+      } else {
+        // Show all families by default
+        setFamilies(mockFamilies)
+      }
       setIsLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [type, herdId, familyId, location])
-
-  function generateRandomPath() {
-    // Generate a random path for visualization
-    const points = []
-    let lat = 34.0522
-    let lng = -118.2437
-
-    for (let i = 0; i < 10; i++) {
-      lat += (Math.random() - 0.5) * 0.05
-      lng += (Math.random() - 0.5) * 0.05
-      points.push({ lat, lng, date: new Date(2023, 0, i * 30) })
     }
 
-    return points
+    loadData()
+  }, [props.type, props.herdId, props.familyId, props.location])
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
-  function generateRandomEvents() {
-    // Generate random events for visualization
-    const eventTypes = ["Birth", "Migration", "Split", "Merge", "Health Issue"]
-    const events = []
-
-    for (let i = 0; i < 3; i++) {
-      const randomPath = generateRandomPath()
-      events.push({
-        type: eventTypes[Math.floor(Math.random() * eventTypes.length)],
-        location: randomPath[0],
-        date: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-      })
-    }
-
-    return events
-  }
+  // Default to LA area since that's where our mock data is centered
+  const center: LatLngExpression = props.location ? [props.location.lat, props.location.lng] : [34.0522, -118.2437]
 
   return (
-    <div className="relative w-full h-full bg-gray-100 rounded-md overflow-hidden">
-      {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <>
-          {/* This would be replaced with an actual map library like Leaflet or Google Maps */}
-          <div ref={mapRef} className="w-full h-full bg-[#E8F4F8] relative">
-            {/* Mock map content */}
-            <div className="absolute inset-0 p-4">
-              <div className="border-2 border-gray-300 border-dashed w-full h-full rounded-md flex items-center justify-center">
-                <MapPin className="h-8 w-8 text-primary" />
+    <div className="w-full h-full" style={{ minHeight: "500px" }}>
+      <MapContainer
+        center={center}
+        zoom={10}
+        className="w-full h-full"
+        style={{ minHeight: "500px" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        {/* Show selected location marker */}
+        {props.location && (
+          <Marker position={[props.location.lat, props.location.lng] as LatLngExpression} icon={icon}>
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-bold">Selected Location</h3>
               </div>
-            </div>
+            </Popup>
+          </Marker>
+        )}
 
-            {/* Map overlay with information based on the view type */}
-            <div className="absolute top-4 right-4 z-10">
-              <Card className="p-3 bg-white/90 shadow-md max-w-xs">
-                {type === "herd" && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Herd Families</h3>
-                    <div className="space-y-1">
-                      {mockHerdFamilies.map((family) => (
-                        <div key={family.id} className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: family.color }}></div>
-                          <span className="text-sm">{family.id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {type === "family" && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium">{familyId || "Family"} Path</h3>
-                    <div className="text-xs space-y-1">
-                      <div>Start: {timeRange[0].toLocaleDateString()}</div>
-                      <div>End: {timeRange[1].toLocaleDateString()}</div>
-                      <div>Total distance: 127.3 km</div>
-                    </div>
-                  </div>
-                )}
-
-                {type === "location-families" && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Nearby Families</h3>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {mockNearbyFamilies.map((family) => (
-                        <div key={family.id} className="text-xs border-b pb-1 last:border-0">
-                          <div className="font-medium">{family.id}</div>
-                          <div className="text-muted-foreground">{family.herd}</div>
-                          <div className="flex justify-between">
-                            <span>{family.distance}</span>
-                            <span>{family.lastSeen}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </div>
-
-            {/* Timeline indicator */}
-            <div className="absolute bottom-4 left-4 right-4 z-10">
-              <Card className="p-2 bg-white/90 shadow-md">
-                <div className="text-xs text-center">
-                  Showing data from {timeRange[0].toLocaleDateString()} to {timeRange[1].toLocaleDateString()}
+        {/* Show family markers */}
+        {families.map((family) => {
+          const lastLocation = family.locations[family.locations.length - 1]
+          return (
+            <Marker
+              key={family.id}
+              position={[lastLocation.lat, lastLocation.lng] as LatLngExpression}
+              icon={icon}
+            >
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-bold">{family.id}</h3>
+                  <p>Herd: {family.herdId}</p>
+                  <p>Size: {family.size}</p>
+                  <p>Health: {family.healthRating}/10</p>
+                  <p>Last seen: {lastLocation.date}</p>
                 </div>
-              </Card>
-            </div>
+              </Popup>
+            </Marker>
+          )
+        })}
 
-            {/* Event markers (simplified visualization) */}
-            {type === "herd" &&
-              mockHerdFamilies.flatMap((family) =>
-                family.events.map((event, idx) => (
-                  <div
-                    key={`${family.id}-event-${idx}`}
-                    className="absolute w-6 h-6 transform -translate-x-1/2 -translate-y-1/2 z-20"
-                    style={{
-                      top: `${30 + Math.random() * 60}%`,
-                      left: `${30 + Math.random() * 60}%`,
-                    }}
-                  >
-                    <Badge className="absolute -top-6 whitespace-nowrap">{event.type}</Badge>
-                    <div className="w-6 h-6 rounded-full bg-red-500 animate-pulse flex items-center justify-center">
-                      <div className="w-3 h-3 rounded-full bg-white"></div>
-                    </div>
-                  </div>
-                )),
-              )}
-          </div>
-        </>
-      )}
+        {/* Show family movement paths */}
+        {families.map((family) => (
+          <Polyline
+            key={`path-${family.id}`}
+            positions={family.locations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
+            pathOptions={{ color: 'red', weight: 2 }}
+          />
+        ))}
+
+        {/* Show individual family movement path */}
+        {familyLocations.length > 0 && (
+          <Polyline
+            positions={familyLocations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
+            pathOptions={{ color: 'blue', weight: 3 }}
+          />
+        )}
+      </MapContainer>
     </div>
   )
 }
+
+const MapView = dynamic(() => Promise.resolve(MapViewComponent), { ssr: false })
+export default MapView
