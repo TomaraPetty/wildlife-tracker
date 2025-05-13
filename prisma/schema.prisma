@@ -1,0 +1,53 @@
+// learn more about Prisma schema in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Herd {
+  id        String    @id @default(cuid())
+  name      String
+  families  Family[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Family {
+  id           String        @id @default(cuid())
+  name         String
+  herd         Herd          @relation(fields: [herdId], references: [id])
+  herdId       String
+  observations Observation[]
+  events       Event[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Observation {
+  id           String   @id @default(cuid())
+  family       Family   @relation(fields: [familyId], references: [id])
+  familyId     String
+  latitude     Float
+  longitude    Float
+  size         Int
+  healthRating Int
+  createdAt    DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  family      Family   @relation(fields: [familyId], references: [id])
+  familyId    String
+  latitude    Float
+  longitude   Float
+  description String
+  createdAt   DateTime @default(now())
+}
