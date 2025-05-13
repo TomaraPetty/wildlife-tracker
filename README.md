@@ -4,7 +4,7 @@
 Rangers report observations about animal movements to our API, and we help them to understand this ingested data via our customized GUI that charts out different life events and visulizes the migration paths on a map.
 ![Screenshot 2025-05-12 at 10 54 44 PM](https://github.com/user-attachments/assets/2f111136-0dc4-4900-8ff7-050014638c3e)
 
-We also have charts to visualize the size of the families and herds over time. 
+We also have charts to visualize the size of the families and the herd's health over time. 
 ![Screenshot 2025-05-12 at 10 56 33 PM](https://github.com/user-attachments/assets/3600cee5-cc44-407f-a44c-adcd33e77a2d)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
