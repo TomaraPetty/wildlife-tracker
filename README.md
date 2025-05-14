@@ -49,7 +49,6 @@ The application follows a modern client-server architecture with the following c
    - Next.js App Router for server-side rendering and routing ✅
    - React components organized by feature ✅
    - Client-side state management using React Hooks ✅
-   - Real-time updates using WebSocket (planned)
 
 2. **Data Layer**
    - In-memory data store (mock data) ✅
@@ -61,7 +60,7 @@ The application follows a modern client-server architecture with the following c
    - RESTful endpoints for data operations ✅
    - GraphQL API for complex queries (planned)
    - Rate limiting and request validation (planned)
-   - JWT authentication (planned)
+   - Auth0 authentication (planned)
 
 ### Data Flow
 
