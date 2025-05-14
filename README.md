@@ -34,10 +34,12 @@ A modern web application for tracking and monitoring wildlife herds, families, a
   - Family Tracking: Track individual family units
   - Family Metrics: View detailed metrics for specific families
   - Location Events: Track events and families near specific locations
+  - Ranger event entry submission form
 - **Time-based Filtering**: Analyze data across custom time ranges
 - **Event Tracking**: Monitor births, health issues, and migrations
 - **Location History**: View historical movement patterns
 - **Responsive Design**: Works on desktop and mobile devices
+- ![Screenshot 2025-05-14 at 9 47 31 AM](https://github.com/user-attachments/assets/7743c90f-8bae-48d1-8c97-3b07475144a9)
 
   Wildlife herd and family tracking with points plotted on a map in a helpful easy to understand dashboard:
   ![Screenshot 2025-05-14 at 9 38 14 AM](https://github.com/user-attachments/assets/5cfcc6d9-2cb1-41e0-849d-368da038477a)
