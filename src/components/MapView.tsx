@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import type { LatLngExpression } from "leaflet"
-import { findNearbyFamilies, getFamilyLocations, getHerdFamilies } from "@/lib/maps"
-import { mockFamilies } from "@/lib/maps"
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
 import { Icon } from "leaflet"
 import "leaflet/dist/leaflet.css"
+
+// Fix for default marker icons
+import L from 'leaflet'
+delete (L.Icon.Default.prototype as { _getIconUrl?: string })._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+})
 
 interface Family {
   id: string
@@ -30,39 +37,73 @@ interface MapViewProps {
 }
 
 const MapViewComponent = (props: MapViewProps) => {
-  const icon = new Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  const bisonIcon = new Icon({
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+    shadowSize: [41, 41],
+    className: 'hue-rotate-30 saturate-200'
+  })
+
+  const wolfIcon = new Icon({
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+    className: 'grayscale brightness-50'
   })
 
   const [isLoading, setIsLoading] = useState(true)
   const [families, setFamilies] = useState<Family[]>([])
   const [familyLocations, setFamilyLocations] = useState<Array<{ lat: number; lng: number; date: string }>>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const loadData = async () => {
-      if (props.type === "location-families" && props.location) {
-        const nearbyFamilies = await findNearbyFamilies([props.location.lat, props.location.lng], 10)
-        setFamilies(nearbyFamilies)
-      } else if (props.type === "family" && props.familyId) {
-        const locations = getFamilyLocations(props.familyId)
-        setFamilyLocations(locations)
-      } else if (props.type === "herd" && props.herdId) {
-        const herdFamilies = getHerdFamilies(props.herdId)
-        setFamilies(herdFamilies)
-      } else {
-        // Show all families by default
-        setFamilies(mockFamilies)
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const url = '/api/observations'
+        const params = new URLSearchParams()
+
+        if (props.type === "location-families" && props.location) {
+          params.append('lat', props.location.lat.toString())
+          params.append('lng', props.location.lng.toString())
+          params.append('radius', '10')
+        } else if (props.type === "family" && props.familyId) {
+          params.append('familyId', props.familyId)
+        } else if (props.type === "herd" && props.herdId) {
+          params.append('herdId', props.herdId)
+        }
+
+        const response = await fetch(`${url}?${params.toString()}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch wildlife data')
+        }
+
+        const data = await response.json()
+        
+        if (props.type === "family" && props.familyId) {
+          setFamilyLocations(data[0]?.locations || [])
+        } else {
+          setFamilies(data)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+        console.error('Error fetching wildlife data:', err)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
-    loadData()
+    fetchData()
   }, [props.type, props.herdId, props.familyId, props.location])
 
   if (isLoading) {
@@ -73,14 +114,24 @@ const MapViewComponent = (props: MapViewProps) => {
     )
   }
 
-  // Default to LA area since that's where our mock data is centered
-  const center: LatLngExpression = props.location ? [props.location.lat, props.location.lng] : [34.0522, -118.2437]
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    )
+  }
+
+  // Center on Yellowstone
+  const center: LatLngExpression = props.location ? [props.location.lat, props.location.lng] : [44.4279, -110.5885]
+
+  const isWolfPack = (herdId: string) => herdId.toLowerCase().includes('pack')
 
   return (
     <div className="w-full h-full" style={{ minHeight: "500px" }}>
       <MapContainer
         center={center}
-        zoom={10}
+        zoom={9}
         className="w-full h-full"
         style={{ minHeight: "500px" }}
       >
@@ -91,7 +142,7 @@ const MapViewComponent = (props: MapViewProps) => {
 
         {/* Show selected location marker */}
         {props.location && (
-          <Marker position={[props.location.lat, props.location.lng] as LatLngExpression} icon={icon}>
+          <Marker position={[props.location.lat, props.location.lng] as LatLngExpression} icon={bisonIcon}>
             <Popup>
               <div className="p-2">
                 <h3 className="font-bold">Selected Location</h3>
@@ -103,19 +154,21 @@ const MapViewComponent = (props: MapViewProps) => {
         {/* Show family markers */}
         {families.map((family) => {
           const lastLocation = family.locations[family.locations.length - 1]
+          const isWolf = isWolfPack(family.herdId)
           return (
             <Marker
               key={family.id}
               position={[lastLocation.lat, lastLocation.lng] as LatLngExpression}
-              icon={icon}
+              icon={isWolf ? wolfIcon : bisonIcon}
             >
               <Popup>
                 <div className="p-2">
                   <h3 className="font-bold">{family.id}</h3>
-                  <p>Herd: {family.herdId}</p>
+                  <p>Group: {family.herdId}</p>
                   <p>Size: {family.size}</p>
                   <p>Health: {family.healthRating}/10</p>
                   <p>Last seen: {lastLocation.date}</p>
+                  <p>Type: {isWolf ? 'Wolf Pack' : 'Bison Herd'}</p>
                 </div>
               </Popup>
             </Marker>
@@ -123,13 +176,20 @@ const MapViewComponent = (props: MapViewProps) => {
         })}
 
         {/* Show family movement paths */}
-        {families.map((family) => (
-          <Polyline
-            key={`path-${family.id}`}
-            positions={family.locations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
-            pathOptions={{ color: 'red', weight: 2 }}
-          />
-        ))}
+        {families.map((family) => {
+          const isWolf = isWolfPack(family.herdId)
+          return (
+            <Polyline
+              key={`path-${family.id}`}
+              positions={family.locations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
+              pathOptions={{ 
+                color: isWolf ? '#2d3748' : '#744210',
+                weight: 2,
+                opacity: 0.7
+              }}
+            />
+          )
+        })}
 
         {/* Show individual family movement path */}
         {familyLocations.length > 0 && (
