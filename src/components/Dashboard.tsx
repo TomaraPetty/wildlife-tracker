@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Users, Activity, MapPin } from "lucide-react"
-import MapView from "@/components/MapView"
+import MapView from "@/components/DynamicMap"
 import TimelineControl from "@/components/TimelineControl"
 import FamilyMetrics from "@/components/FamilyMetrics"
 import EventsList from "@/components/EventsList"
@@ -25,7 +25,10 @@ export default function Dashboard() {
   const [selectedHerd, setSelectedHerd] = useState<string | null>(null)
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [timeRange, setTimeRange] = useState([new Date("2023-01-01"), new Date("2023-12-31")])
+  const [timeRange, setTimeRange] = useState<[Date, Date]>(() => [
+    new Date("2023-01-01T00:00:00.000Z"),
+    new Date("2023-12-31T23:59:59.999Z")
+  ])
   const [selectedEventTypes, setSelectedEventTypes] = useState<Set<EventType>>(new Set())
   const [showLocationHistory, setShowLocationHistory] = useState(false)
 
