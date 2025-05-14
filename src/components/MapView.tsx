@@ -1,147 +1,160 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import dynamic from "next/dynamic"
-import type { LatLngExpression } from "leaflet"
-import { findNearbyFamilies, getFamilyLocations, getHerdFamilies } from "@/lib/maps"
-import { mockFamilies } from "@/lib/maps"
+import { useEffect, useRef, useState } from "react"
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
-import { Icon } from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { Icon } from "leaflet"
+
+interface Location {
+  lat: number
+  lng: number
+  date: string
+  events?: Array<{
+    type: 'birth' | 'health' | 'migration'
+    description: string
+    severity?: 'low' | 'medium' | 'high'
+    affectedCount?: number
+  }>
+}
 
 interface Family {
   id: string
   herdId: string
-  locations: Array<{
-    lat: number
-    lng: number
-    date: string
-  }>
+  locations: Location[]
   size: number
   healthRating: number
 }
+
+const defaultIcon = new Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
 
 interface MapViewProps {
   type: "herd" | "family" | "location-families"
   herdId?: string | null
   familyId?: string | null
   location?: { lat: number; lng: number } | null
-  timeRange?: [Date, Date]
+  timeRange: [Date, Date]
 }
 
-const MapViewComponent = (props: MapViewProps) => {
-  const icon = new Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  })
-
-  const [isLoading, setIsLoading] = useState(true)
+export default function MapView({ type, herdId, familyId, location, timeRange }: MapViewProps) {
+  const mapRef = useRef<L.Map>(null)
   const [families, setFamilies] = useState<Family[]>([])
-  const [familyLocations, setFamilyLocations] = useState<Array<{ lat: number; lng: number; date: string }>>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const loadData = async () => {
-      if (props.type === "location-families" && props.location) {
-        const nearbyFamilies = await findNearbyFamilies([props.location.lat, props.location.lng], 10)
-        setFamilies(nearbyFamilies)
-      } else if (props.type === "family" && props.familyId) {
-        const locations = getFamilyLocations(props.familyId)
-        setFamilyLocations(locations)
-      } else if (props.type === "herd" && props.herdId) {
-        const herdFamilies = getHerdFamilies(props.herdId)
-        setFamilies(herdFamilies)
-      } else {
-        // Show all families by default
-        setFamilies(mockFamilies)
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const url = "/api/observations"
+
+        const response = await fetch(url)
+        if (!response.ok) throw new Error("Failed to fetch data")
+        const data = await response.json()
+        setFamilies(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred")
+      } finally {
+        setLoading(false)
       }
-      setIsLoading(false)
     }
 
-    loadData()
-  }, [props.type, props.herdId, props.familyId, props.location])
+    fetchData()
+  }, [type, herdId, familyId, location])
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  if (loading) return <div className="flex items-center justify-center h-full">Loading...</div>
+  if (error) return <div className="flex items-center justify-center h-full text-red-500">{error}</div>
 
-  // Default to LA area since that's where our mock data is centered
-  const center: LatLngExpression = props.location ? [props.location.lat, props.location.lng] : [34.0522, -118.2437]
+  const center = location || { lat: 44.4279, lng: -110.5885 } // Yellowstone center
+  const zoom = location ? 10 : 9
 
   return (
-    <div className="w-full h-full" style={{ minHeight: "500px" }}>
-      <MapContainer
-        center={center}
-        zoom={10}
-        className="w-full h-full"
-        style={{ minHeight: "500px" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    <MapContainer
+      center={[center.lat, center.lng]}
+      zoom={zoom}
+      className="w-full h-full"
+      ref={mapRef}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
 
-        {/* Show selected location marker */}
-        {props.location && (
-          <Marker position={[props.location.lat, props.location.lng] as LatLngExpression} icon={icon}>
-            <Popup>
-              <div className="p-2">
-                <h3 className="font-bold">Selected Location</h3>
-              </div>
-            </Popup>
-          </Marker>
-        )}
+      {families.map((family) => {
+        const isWolf = family.herdId.toLowerCase().includes("wolf")
+        const iconClass = isWolf ? "grayscale brightness-50" : "hue-rotate-30 saturate-200"
+        const customIcon = new Icon({
+          ...defaultIcon.options,
+          className: iconClass,
+        })
 
-        {/* Show family markers */}
-        {families.map((family) => {
-          const lastLocation = family.locations[family.locations.length - 1]
-          return (
-            <Marker
-              key={family.id}
-              position={[lastLocation.lat, lastLocation.lng] as LatLngExpression}
-              icon={icon}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-bold">{family.id}</h3>
-                  <p>Herd: {family.herdId}</p>
-                  <p>Size: {family.size}</p>
-                  <p>Health: {family.healthRating}/10</p>
-                  <p>Last seen: {lastLocation.date}</p>
-                </div>
-              </Popup>
-            </Marker>
-          )
-        })}
+        // Get locations within time range
+        const filteredLocations = family.locations.filter(
+          (loc) => new Date(loc.date) >= timeRange[0] && new Date(loc.date) <= timeRange[1]
+        )
 
-        {/* Show family movement paths */}
-        {families.map((family) => (
-          <Polyline
-            key={`path-${family.id}`}
-            positions={family.locations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
-            pathOptions={{ color: 'red', weight: 2 }}
-          />
-        ))}
+        // Create polyline coordinates for migration path
+        const polylineCoords = filteredLocations.map(loc => [loc.lat, loc.lng] as [number, number])
 
-        {/* Show individual family movement path */}
-        {familyLocations.length > 0 && (
-          <Polyline
-            positions={familyLocations.map(loc => [loc.lat, loc.lng] as LatLngExpression)}
-            pathOptions={{ color: 'blue', weight: 3 }}
-          />
-        )}
-      </MapContainer>
-    </div>
+        return (
+          <div key={family.id}>
+            {filteredLocations.map((loc, index) => (
+              <Marker
+                key={`${family.id}-${index}`}
+                position={[loc.lat, loc.lng]}
+                icon={customIcon}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-bold">{family.id}</h3>
+                    <p>Herd: {family.herdId}</p>
+                    <p>Size: {family.size}</p>
+                    <p>Health: {family.healthRating}/10</p>
+                    <p>Last seen: {new Date(loc.date).toLocaleDateString()}</p>
+                    <p>Type: {isWolf ? "Wolf Pack" : "Bison Herd"}</p>
+                    {loc.events && loc.events.length > 0 && (
+                      <div className="mt-2">
+                        <h4 className="font-semibold">Recent Events:</h4>
+                        {loc.events.map((event, eventIndex) => (
+                          <div key={eventIndex} className="mt-1">
+                            <p className={`font-medium ${
+                              event.type === 'health' && event.severity === 'high' ? 'text-red-500' :
+                              event.type === 'health' && event.severity === 'medium' ? 'text-orange-500' :
+                              event.type === 'birth' ? 'text-green-500' : ''
+                            }`}>
+                              {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                            </p>
+                            <p className="text-sm text-gray-600">{event.description}</p>
+                            {event.affectedCount && (
+                              <p className="text-xs text-gray-500">Affected: {event.affectedCount}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+            {polylineCoords.length > 1 && (
+              <Polyline
+                positions={polylineCoords}
+                pathOptions={{
+                  color: isWolf ? '#4B5563' : '#92400E',
+                  weight: 3,
+                  opacity: 0.7
+                }}
+              />
+            )}
+          </div>
+        )
+      })}
+    </MapContainer>
   )
 }
-
-const MapView = dynamic(() => Promise.resolve(MapViewComponent), { ssr: false })
-export default MapView
