@@ -23,6 +23,12 @@ interface Family {
     lat: number
     lng: number
     date: string
+    events?: Array<{
+      type: string
+      severity?: string
+      description: string
+      affectedCount?: number
+    }>
   }>
   size: number
   healthRating: number
@@ -169,6 +175,26 @@ const MapViewComponent = (props: MapViewProps) => {
                   <p>Health: {family.healthRating}/10</p>
                   <p>Last seen: {lastLocation.date}</p>
                   <p>Type: {isWolf ? 'Wolf Pack' : 'Bison Herd'}</p>
+                  {lastLocation.events && lastLocation.events.length > 0 && (
+                    <div className="mt-2">
+                      <h4 className="font-semibold">Recent Events:</h4>
+                      {lastLocation.events.map((event, index) => (
+                        <div key={index} className="mt-1 text-sm">
+                          <p className={`font-medium ${
+                            event.type === 'health' && event.severity === 'high' ? 'text-red-600' :
+                            event.type === 'health' && event.severity === 'medium' ? 'text-orange-600' :
+                            event.type === 'birth' ? 'text-green-600' :
+                            'text-gray-600'
+                          }`}>
+                            {event.type.charAt(0).toUpperCase() + event.type.slice(1)}: {event.description}
+                          </p>
+                          {event.affectedCount && (
+                            <p className="text-gray-500">Affected: {event.affectedCount}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Popup>
             </Marker>
