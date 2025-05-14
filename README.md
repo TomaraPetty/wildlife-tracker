@@ -1,45 +1,144 @@
-# Wildlife Tracker
+# Wildlife Tracker Dashboard
 
-### This applications is a service that national parks use to track wildlife. 
-Rangers report observations about animal movements to our API, and we help them to understand this ingested data via our customized GUI that charts out different life events and visulizes the migration paths on a map.
-![Screenshot 2025-05-12 at 10 54 44 PM](https://github.com/user-attachments/assets/2f111136-0dc4-4900-8ff7-050014638c3e)
+A modern web application for tracking and monitoring wildlife herds, families, and their movements over time. Built with Next.js, TypeScript, and Tailwind CSS.
 
-We also have charts to visualize the size of the families and the herd's health over time. 
-![Screenshot 2025-05-12 at 10 56 33 PM](https://github.com/user-attachments/assets/3600cee5-cc44-407f-a44c-adcd33e77a2d)
+## Table of Contents
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Development](#development)
+  - [Project Structure](#project-structure)
+  - [Key Components](#key-components)
+  - [Running Tests](#running-tests)
+  - [Building for Production](#building-for-production)
+- [Docker Support](#docker-support)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
+## Features
+
+- **Interactive Map View**: Visualize herd and family movements using Leaflet maps
+- **Multi-view Dashboard**:
+  - Herd Tracking: Monitor entire herds and their movements
+  - Family Tracking: Track individual family units
+  - Family Metrics: View detailed metrics for specific families
+  - Location Events: Track events and families near specific locations
+- **Time-based Filtering**: Analyze data across custom time ranges
+- **Event Tracking**: Monitor births, health issues, and migrations
+- **Location History**: View historical movement patterns
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Maps**: Leaflet, react-leaflet
+- **Charts**: Recharts
+- **State Management**: React Hooks
+- **Development**: Docker
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 20+
+- Docker and Docker Compose
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [repository-url]
+cd wildlife-tracker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+# Using npm
+npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Using Docker
+docker compose up
+```
 
-## Learn More
+The application will be available at `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+## Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/              # Next.js app directory
+├── components/       # React components
+│   ├── ui/          # Reusable UI components
+│   └── ...          # Feature-specific components
+├── lib/             # Utility functions and shared logic
+└── types/           # TypeScript type definitions
+```
 
-## Deploy on Vercel
+### Key Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `Dashboard.tsx`: Main application interface
+- `MapView.tsx`: Interactive map component
+- `FamilyMetrics.tsx`: Family-specific metrics and charts
+- `TimelineControl.tsx`: Time range selection component
+- `EventsList.tsx`: List of events near selected locations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Running Tests
+
+```bash
+npm run test
+```
+
+### Building for Production
+
+```bash
+# Using npm
+npm run build
+npm start
+
+# Using Docker
+docker compose up --build
+```
+
+## Docker Support
+
+The application includes Docker configuration for development:
+
+```bash
+# Start development server with hot reload
+docker compose up --build
+
+# Stop containers
+docker compose down
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Leaflet](https://leafletjs.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
