@@ -1,165 +1,280 @@
-// Mock data for visualization
-export const mockFamilies = [
-  // Bison Families
+interface Location {
+  lat: number
+  lng: number
+  date: string
+  events?: Array<{
+    type: 'birth' | 'health' | 'split' | 'merge' | 'migration'
+    description: string
+    severity?: 'low' | 'medium' | 'high'
+    affectedCount?: number
+    newFamilyId?: string
+    destinationHerdId?: string
+  }>
+}
+
+interface Family {
+  id: string
+  herdId: string
+  locations: Location[]
+  size: number
+  healthRating: number
+}
+
+export const mockFamilies: Family[] = [
   {
     id: "Family YSE-1",
     herdId: "Yellowstone East Bison",
+    size: 45,
+    healthRating: 9,
     locations: [
-      { lat: 44.4279, lng: -110.5885, date: "2024-01-01" },
-      { lat: 44.4321, lng: -110.5923, date: "2024-01-05" },
-      { lat: 44.4379, lng: -110.5985, date: "2024-01-15" },
-      { lat: 44.4423, lng: -110.6021, date: "2024-01-20" },
-      { lat: 44.4479, lng: -110.6085, date: "2024-02-01" },
-      { lat: 44.4521, lng: -110.6123, date: "2024-02-05" },
-    ],
-    size: 15,
-    healthRating: 8,
+      {
+        lat: 44.4279,
+        lng: -110.5885,
+        date: "2024-03-01",
+        events: [
+          {
+            type: "birth",
+            description: "3 new calves born",
+            affectedCount: 3
+          }
+        ]
+      },
+      {
+        lat: 44.4285,
+        lng: -110.5890,
+        date: "2024-03-05"
+      },
+      {
+        lat: 44.4290,
+        lng: -110.5895,
+        date: "2024-03-10",
+        events: [
+          {
+            type: "health",
+            description: "Several individuals showing signs of respiratory infection",
+            severity: "medium",
+            affectedCount: 5
+          }
+        ]
+      },
+      {
+        lat: 44.4295,
+        lng: -110.5900,
+        date: "2024-03-15"
+      },
+      {
+        lat: 44.4300,
+        lng: -110.5905,
+        date: "2024-03-20"
+      },
+      {
+        lat: 44.4305,
+        lng: -110.5910,
+        date: "2024-03-25",
+        events: [
+          {
+            type: "split",
+            description: "Herd split into two groups",
+            newFamilyId: "Family YSE-1A"
+          }
+        ]
+      }
+    ]
   },
   {
-    id: "Family YSE-2",
+    id: "Family YSE-1A",
     herdId: "Yellowstone East Bison",
+    size: 20,
+    healthRating: 8,
     locations: [
-      { lat: 44.4179, lng: -110.5785, date: "2024-01-01" },
-      { lat: 44.4223, lng: -110.5821, date: "2024-01-07" },
-      { lat: 44.4279, lng: -110.5885, date: "2024-01-15" },
-      { lat: 44.4321, lng: -110.5923, date: "2024-01-22" },
-      { lat: 44.4379, lng: -110.5985, date: "2024-02-01" },
-      { lat: 44.4423, lng: -110.6021, date: "2024-02-07" },
-    ],
-    size: 12,
-    healthRating: 9,
+      {
+        lat: 44.4305,
+        lng: -110.5910,
+        date: "2024-03-25",
+        events: [
+          {
+            type: "split",
+            description: "Split from Family YSE-1"
+          }
+        ]
+      },
+      {
+        lat: 44.4310,
+        lng: -110.5915,
+        date: "2024-03-30"
+      },
+      {
+        lat: 44.4315,
+        lng: -110.5920,
+        date: "2024-04-05"
+      }
+    ]
   },
   {
     id: "Family YSW-1",
     herdId: "Yellowstone West Bison",
-    locations: [
-      { lat: 44.4579, lng: -110.6185, date: "2024-01-01" },
-      { lat: 44.4623, lng: -110.6221, date: "2024-01-06" },
-      { lat: 44.4679, lng: -110.6285, date: "2024-01-15" },
-      { lat: 44.4721, lng: -110.6323, date: "2024-01-21" },
-      { lat: 44.4779, lng: -110.6385, date: "2024-02-01" },
-      { lat: 44.4823, lng: -110.6421, date: "2024-02-06" },
-    ],
-    size: 18,
+    size: 35,
     healthRating: 7,
+    locations: [
+      {
+        lat: 44.6000,
+        lng: -110.8000,
+        date: "2024-03-01"
+      },
+      {
+        lat: 44.6010,
+        lng: -110.8010,
+        date: "2024-03-08",
+        events: [
+          {
+            type: "health",
+            description: "Multiple cases of brucellosis detected",
+            severity: "high",
+            affectedCount: 8
+          }
+        ]
+      },
+      {
+        lat: 44.6020,
+        lng: -110.8020,
+        date: "2024-03-15"
+      },
+      {
+        lat: 44.6030,
+        lng: -110.8030,
+        date: "2024-03-22",
+        events: [
+          {
+            type: "migration",
+            description: "Herd beginning seasonal migration to higher elevations",
+            destinationHerdId: "Yellowstone Central Bison"
+          }
+        ]
+      }
+    ]
   },
   {
-    id: "Family YSN-1",
-    herdId: "Yellowstone North Bison",
-    locations: [
-      { lat: 44.4979, lng: -110.6585, date: "2024-01-01" },
-      { lat: 44.5023, lng: -110.6621, date: "2024-01-08" },
-      { lat: 44.5079, lng: -110.6685, date: "2024-01-15" },
-      { lat: 44.5121, lng: -110.6723, date: "2024-01-23" },
-      { lat: 44.5179, lng: -110.6785, date: "2024-02-01" },
-      { lat: 44.5223, lng: -110.6821, date: "2024-02-08" },
-    ],
-    size: 20,
-    healthRating: 9,
-  },
-  {
-    id: "Family YSS-1",
-    herdId: "Yellowstone South Bison",
-    locations: [
-      { lat: 44.5379, lng: -110.6985, date: "2024-01-01" },
-      { lat: 44.5423, lng: -110.7021, date: "2024-01-09" },
-      { lat: 44.5479, lng: -110.7085, date: "2024-01-15" },
-      { lat: 44.5521, lng: -110.7123, date: "2024-01-24" },
-      { lat: 44.5579, lng: -110.7185, date: "2024-02-01" },
-      { lat: 44.5623, lng: -110.7221, date: "2024-02-09" },
-    ],
-    size: 16,
-    healthRating: 8,
-  },
-  // Wolf Packs
-  {
-    id: "Family LJ-1",
-    herdId: "Lamar Canyon Pack",
-    locations: [
-      { lat: 44.8779, lng: -110.2385, date: "2024-01-01" },
-      { lat: 44.8823, lng: -110.2421, date: "2024-01-04" },
-      { lat: 44.8879, lng: -110.2485, date: "2024-01-15" },
-      { lat: 44.8923, lng: -110.2521, date: "2024-01-18" },
-      { lat: 44.8979, lng: -110.2585, date: "2024-02-01" },
-      { lat: 44.9023, lng: -110.2621, date: "2024-02-04" },
-    ],
+    id: "Pack YNP-1",
+    herdId: "Yellowstone North Pack",
     size: 8,
     healthRating: 9,
+    locations: [
+      {
+        lat: 44.9000,
+        lng: -110.7000,
+        date: "2024-03-01",
+        events: [
+          {
+            type: "birth",
+            description: "4 new pups born",
+            affectedCount: 4
+          }
+        ]
+      },
+      {
+        lat: 44.9010,
+        lng: -110.7010,
+        date: "2024-03-07"
+      },
+      {
+        lat: 44.9020,
+        lng: -110.7020,
+        date: "2024-03-14",
+        events: [
+          {
+            type: "merge",
+            description: "Merged with Pack YNP-2",
+            affectedCount: 6
+          }
+        ]
+      },
+      {
+        lat: 44.9030,
+        lng: -110.7030,
+        date: "2024-03-21"
+      }
+    ]
   },
   {
-    id: "Family LJ-2",
-    herdId: "Lamar Canyon Pack",
-    locations: [
-      { lat: 44.8679, lng: -110.2285, date: "2024-01-01" },
-      { lat: 44.8723, lng: -110.2321, date: "2024-01-03" },
-      { lat: 44.8779, lng: -110.2385, date: "2024-01-15" },
-      { lat: 44.8823, lng: -110.2421, date: "2024-01-17" },
-      { lat: 44.8879, lng: -110.2485, date: "2024-02-01" },
-      { lat: 44.8923, lng: -110.2521, date: "2024-02-03" },
-    ],
+    id: "Pack YNP-2",
+    herdId: "Yellowstone North Pack",
     size: 6,
     healthRating: 8,
+    locations: [
+      {
+        lat: 44.9020,
+        lng: -110.7020,
+        date: "2024-03-14",
+        events: [
+          {
+            type: "merge",
+            description: "Merged with Pack YNP-1"
+          }
+        ]
+      }
+    ]
   },
   {
-    id: "Family 8M-1",
-    herdId: "8 Mile Pack",
-    locations: [
-      { lat: 44.9179, lng: -110.2685, date: "2024-01-01" },
-      { lat: 44.9223, lng: -110.2721, date: "2024-01-05" },
-      { lat: 44.9279, lng: -110.2785, date: "2024-01-15" },
-      { lat: 44.9323, lng: -110.2821, date: "2024-01-19" },
-      { lat: 44.9379, lng: -110.2885, date: "2024-02-01" },
-      { lat: 44.9423, lng: -110.2921, date: "2024-02-05" },
-    ],
+    id: "Pack YSP-1",
+    herdId: "Yellowstone South Pack",
     size: 7,
     healthRating: 9,
-  },
-  {
-    id: "Family MJ-1",
-    herdId: "Mollie's Pack",
     locations: [
-      { lat: 44.9479, lng: -110.2985, date: "2024-01-01" },
-      { lat: 44.9523, lng: -110.3021, date: "2024-01-06" },
-      { lat: 44.9579, lng: -110.3085, date: "2024-01-15" },
-      { lat: 44.9623, lng: -110.3121, date: "2024-01-20" },
-      { lat: 44.9679, lng: -110.3185, date: "2024-02-01" },
-      { lat: 44.9723, lng: -110.3221, date: "2024-02-06" },
-    ],
-    size: 9,
-    healthRating: 8,
-  },
-  {
-    id: "Family MJ-2",
-    herdId: "Mollie's Pack",
-    locations: [
-      { lat: 44.9379, lng: -110.2885, date: "2024-01-01" },
-      { lat: 44.9423, lng: -110.2921, date: "2024-01-07" },
-      { lat: 44.9479, lng: -110.2985, date: "2024-01-15" },
-      { lat: 44.9523, lng: -110.3021, date: "2024-01-21" },
-      { lat: 44.9579, lng: -110.3085, date: "2024-02-01" },
-      { lat: 44.9623, lng: -110.3121, date: "2024-02-07" },
-    ],
-    size: 5,
-    healthRating: 9,
+      {
+        lat: 44.3000,
+        lng: -110.5000,
+        date: "2024-03-01"
+      },
+      {
+        lat: 44.3010,
+        lng: -110.5010,
+        date: "2024-03-08",
+        events: [
+          {
+            type: "health",
+            description: "Alpha male showing signs of injury",
+            severity: "medium",
+            affectedCount: 1
+          }
+        ]
+      },
+      {
+        lat: 44.3020,
+        lng: -110.5020,
+        date: "2024-03-15"
+      },
+      {
+        lat: 44.3030,
+        lng: -110.5030,
+        date: "2024-03-22",
+        events: [
+          {
+            type: "migration",
+            description: "Pack following bison herd migration",
+            destinationHerdId: "Yellowstone Central Pack"
+          }
+        ]
+      }
+    ]
   }
 ]
 
-export async function findNearbyFamilies(location: [number, number], radius: number) {
-  // Mock implementation - returns families within radius
+export const findNearbyFamilies = async (center: [number, number], radiusKm: number) => {
   return mockFamilies.filter(family => {
     const lastLocation = family.locations[family.locations.length - 1]
     const distance = Math.sqrt(
-      Math.pow(lastLocation.lat - location[0], 2) + 
-      Math.pow(lastLocation.lng - location[1], 2)
-    ) * 111 // Rough conversion to kilometers
-    return distance <= radius
+      Math.pow(lastLocation.lat - center[0], 2) + 
+      Math.pow(lastLocation.lng - center[1], 2)
+    ) * 111 // Conversion to kilometers
+    return distance <= radiusKm
   })
 }
 
-export function getFamilyLocations(familyId: string) {
-  return mockFamilies.find(f => f.id === familyId)?.locations || []
+export const getFamilyLocations = (familyId: string) => {
+  const family = mockFamilies.find(f => f.id === familyId)
+  return family?.locations || []
 }
 
-export function getHerdFamilies(herdId: string) {
-  return mockFamilies.filter(f => f.herdId === herdId)
+export const getHerdFamilies = (herdId: string) => {
+  return mockFamilies.filter(family => family.herdId === herdId)
 }
