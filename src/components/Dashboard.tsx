@@ -17,6 +17,7 @@ import FamilyMetrics from "@/components/FamilyMetrics"
 import EventsList from "@/components/EventsList"
 import { toast } from "sonner"
 import { mockFamilies } from "@/lib/maps"
+import RangerEventForm from "@/components/RangerEventForm"
 
 type EventType = 'birth' | 'health' | 'migration'
 
@@ -149,6 +150,10 @@ export default function Dashboard() {
           <TabsTrigger value="location-events">
             <MapPin className="mr-2 h-4 w-4" />
             <span className="hidden md:inline">Location Events</span>
+          </TabsTrigger>
+          <TabsTrigger value="ranger-submit">
+            <MapPin className="mr-2 h-4 w-4" />
+            <span className="hidden md:inline">Submit Event</span>
           </TabsTrigger>
         </TabsList>
 
@@ -380,6 +385,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="ranger-submit" className="mt-0">
+              <RangerEventForm />
             </TabsContent>
           </div>
         </div>

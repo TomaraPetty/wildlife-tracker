@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { Icon } from "leaflet"
 
@@ -35,14 +35,27 @@ const defaultIcon = new Icon({
 })
 
 interface MapViewProps {
-  type: "herd" | "family" | "location-families"
+  type: "herd" | "family" | "location-families" | "location-select"
   herdId?: string | null
   familyId?: string | null
   location?: { lat: number; lng: number } | null
-  timeRange: [Date, Date]
+  timeRange?: [Date, Date]
+  onLocationSelect?: (location: { lat: number; lng: number }) => void
+  selectedLocation?: { lat: number; lng: number } | null
 }
 
-export default function MapView({ type, herdId, familyId, location, timeRange }: MapViewProps) {
+function LocationMarker({ onLocationSelect }: { onLocationSelect?: (location: { lat: number; lng: number }) => void }) {
+  useMapEvents({
+    click: (e) => {
+      if (onLocationSelect) {
+        onLocationSelect({ lat: e.latlng.lat, lng: e.latlng.lng })
+      }
+    },
+  })
+  return null
+}
+
+export default function MapView({ type, herdId, familyId, location, timeRange, onLocationSelect, selectedLocation }: MapViewProps) {
   const mapRef = useRef<L.Map>(null)
   const [families, setFamilies] = useState<Family[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +99,21 @@ export default function MapView({ type, herdId, familyId, location, timeRange }:
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {families.map((family) => {
+      {type === 'location-select' && (
+        <>
+          <LocationMarker onLocationSelect={onLocationSelect} />
+          {selectedLocation && (
+            <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={defaultIcon}>
+              <Popup>
+                Selected Location<br />
+                {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
+              </Popup>
+            </Marker>
+          )}
+        </>
+      )}
+
+      {type !== 'location-select' && families.map((family) => {
         const isWolf = family.herdId.toLowerCase().includes("wolf")
         const iconClass = isWolf ? "grayscale brightness-50" : "hue-rotate-30 saturate-200"
         const customIcon = new Icon({
@@ -95,9 +122,11 @@ export default function MapView({ type, herdId, familyId, location, timeRange }:
         })
 
         // Get locations within time range
-        const filteredLocations = family.locations.filter(
-          (loc) => new Date(loc.date) >= timeRange[0] && new Date(loc.date) <= timeRange[1]
-        )
+        const filteredLocations = timeRange 
+          ? family.locations.filter(
+              (loc) => new Date(loc.date) >= timeRange[0] && new Date(loc.date) <= timeRange[1]
+            )
+          : family.locations
 
         // Create polyline coordinates for migration path
         const polylineCoords = filteredLocations.map(loc => [loc.lat, loc.lng] as [number, number])
