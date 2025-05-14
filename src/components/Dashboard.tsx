@@ -343,7 +343,7 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="h-[500px]">
-                  <FamilyMetrics familyId={selectedFamily} timeRange={timeRange} />
+                  <FamilyMetrics familyId={selectedFamily} timeRange={timeRange as [Date, Date]} />
                 </CardContent>
               </Card>
             </TabsContent>
