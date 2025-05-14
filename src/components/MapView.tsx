@@ -95,9 +95,11 @@ export default function MapView({ type, herdId, familyId, location, timeRange }:
         })
 
         // Get locations within time range
-        const filteredLocations = family.locations.filter(
-          (loc) => new Date(loc.date) >= timeRange[0] && new Date(loc.date) <= timeRange[1]
-        )
+        const filteredLocations = timeRange 
+          ? family.locations.filter(
+              (loc) => new Date(loc.date) >= timeRange[0] && new Date(loc.date) <= timeRange[1]
+            )
+          : family.locations
 
         // Create polyline coordinates for migration path
         const polylineCoords = filteredLocations.map(loc => [loc.lat, loc.lng] as [number, number])
