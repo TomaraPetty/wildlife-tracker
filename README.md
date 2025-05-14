@@ -39,6 +39,18 @@ A modern web application for tracking and monitoring wildlife herds, families, a
 - **Location History**: View historical movement patterns
 - **Responsive Design**: Works on desktop and mobile devices
 
+  Wildlife herd and family tracking with points plotted on a map in a helpful easy to understand dashboard:
+  ![Screenshot 2025-05-14 at 9 38 14 AM](https://github.com/user-attachments/assets/5cfcc6d9-2cb1-41e0-849d-368da038477a)
+
+  Family metrics and health chart:
+  ![Screenshot 2025-05-14 at 9 39 06 AM](https://github.com/user-attachments/assets/55452e8b-7274-4e86-ba11-439662d7e4c2)
+
+  Ranger event entry form:
+  ![Screenshot 2025-05-14 at 9 37 41 AM](https://github.com/user-attachments/assets/2651471c-7ae4-4537-85b7-3c9b7aa36fb2)
+
+  Clickable pins to see data about the checkpoint:
+  ![Screenshot 2025-05-14 at 9 39 53 AM](https://github.com/user-attachments/assets/cae9fcde-ca6d-4564-8289-bb42bc1872d7)
+
 ## Technical Specification
 
 ### Architecture
