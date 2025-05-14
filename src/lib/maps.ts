@@ -3,12 +3,10 @@ interface Location {
   lng: number
   date: string
   events?: Array<{
-    type: 'birth' | 'health' | 'split' | 'merge' | 'migration'
+    type: 'birth' | 'health' | 'migration'
     description: string
     severity?: 'low' | 'medium' | 'high'
     affectedCount?: number
-    newFamilyId?: string
-    destinationHerdId?: string
   }>
 }
 
@@ -36,6 +34,10 @@ export const mockFamilies: Family[] = [
             type: "birth",
             description: "3 new calves born",
             affectedCount: 3
+          },
+          {
+            type: "migration",
+            description: "Spring migration to lower elevations"
           }
         ]
       },
@@ -73,40 +75,10 @@ export const mockFamilies: Family[] = [
         date: "2024-03-25",
         events: [
           {
-            type: "split",
-            description: "Herd split into two groups",
-            newFamilyId: "Family YSE-1A"
+            type: "migration",
+            description: "Moving to summer grazing grounds"
           }
         ]
-      }
-    ]
-  },
-  {
-    id: "Family YSE-1A",
-    herdId: "Yellowstone East Bison",
-    size: 20,
-    healthRating: 8,
-    locations: [
-      {
-        lat: 44.4305,
-        lng: -110.5910,
-        date: "2024-03-25",
-        events: [
-          {
-            type: "split",
-            description: "Split from Family YSE-1"
-          }
-        ]
-      },
-      {
-        lat: 44.4310,
-        lng: -110.5915,
-        date: "2024-03-30"
-      },
-      {
-        lat: 44.4315,
-        lng: -110.5920,
-        date: "2024-04-05"
       }
     ]
   },
@@ -119,7 +91,13 @@ export const mockFamilies: Family[] = [
       {
         lat: 44.6000,
         lng: -110.8000,
-        date: "2024-03-01"
+        date: "2024-03-01",
+        events: [
+          {
+            type: "migration",
+            description: "Winter range to spring range transition"
+          }
+        ]
       },
       {
         lat: 44.6010,
@@ -146,8 +124,7 @@ export const mockFamilies: Family[] = [
         events: [
           {
             type: "migration",
-            description: "Herd beginning seasonal migration to higher elevations",
-            destinationHerdId: "Yellowstone Central Bison"
+            description: "Moving to higher elevations for summer"
           }
         ]
       }
@@ -168,6 +145,10 @@ export const mockFamilies: Family[] = [
             type: "birth",
             description: "4 new pups born",
             affectedCount: 4
+          },
+          {
+            type: "migration",
+            description: "Following prey to winter range"
           }
         ]
       },
@@ -179,36 +160,16 @@ export const mockFamilies: Family[] = [
       {
         lat: 44.9020,
         lng: -110.7020,
-        date: "2024-03-14",
-        events: [
-          {
-            type: "merge",
-            description: "Merged with Pack YNP-2",
-            affectedCount: 6
-          }
-        ]
+        date: "2024-03-14"
       },
       {
         lat: 44.9030,
         lng: -110.7030,
-        date: "2024-03-21"
-      }
-    ]
-  },
-  {
-    id: "Pack YNP-2",
-    herdId: "Yellowstone North Pack",
-    size: 6,
-    healthRating: 8,
-    locations: [
-      {
-        lat: 44.9020,
-        lng: -110.7020,
-        date: "2024-03-14",
+        date: "2024-03-21",
         events: [
           {
-            type: "merge",
-            description: "Merged with Pack YNP-1"
+            type: "migration",
+            description: "Moving to summer territory"
           }
         ]
       }
@@ -223,7 +184,13 @@ export const mockFamilies: Family[] = [
       {
         lat: 44.3000,
         lng: -110.5000,
-        date: "2024-03-01"
+        date: "2024-03-01",
+        events: [
+          {
+            type: "migration",
+            description: "Winter to spring range transition"
+          }
+        ]
       },
       {
         lat: 44.3010,
@@ -250,8 +217,7 @@ export const mockFamilies: Family[] = [
         events: [
           {
             type: "migration",
-            description: "Pack following bison herd migration",
-            destinationHerdId: "Yellowstone Central Pack"
+            description: "Following prey to summer range"
           }
         ]
       }
