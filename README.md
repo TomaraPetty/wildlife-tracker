@@ -225,7 +225,6 @@ src/
 │   ├── ui/          # Reusable UI components
 │   └── ...          # Feature-specific components
 ├── lib/             # Utility functions and shared logic
-└── types/           # TypeScript type definitions
 ```
 
 ### Key Components
@@ -236,11 +235,10 @@ src/
 - `TimelineControl.tsx`: Time range selection component
 - `EventsList.tsx`: List of events near selected locations
 
-### Running Tests
-
-```bash
-npm run test
-```
+### Running Tests (Planned)
+Tests are not currently set up for this project. 
+Test set up will be done with jest for front end and backend testing.
+e2e testing will be set up with Cypress or Playwright
 
 ### Building for Production
 
