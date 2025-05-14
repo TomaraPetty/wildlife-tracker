@@ -194,7 +194,7 @@ The application follows a modern client-server architecture with the following c
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone git@github.com:TomaraPetty/wildlife-tracker.git
 cd wildlife-tracker
 ```
 
