@@ -20,6 +20,7 @@ export default function RangerEventForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted:', { eventType, description, selectedLocation, familyId })
     setIsSubmitting(true)
 
     try {
@@ -38,6 +39,7 @@ export default function RangerEventForm() {
       })
 
       const data = await response.json()
+      console.log('Response:', data)
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to submit event')
@@ -50,12 +52,15 @@ export default function RangerEventForm() {
       setSelectedLocation(null)
       setFamilyId('')
     } catch (error) {
+      console.error('Submission error:', error)
       toast.error(error instanceof Error ? error.message : "Failed to submit event")
-      console.error(error)
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  // Add debug log for button state
+  console.log('Button state:', { isSubmitting, eventType, description, selectedLocation })
 
   return (
     <div className="container mx-auto p-4 space-y-6">
