@@ -16,6 +16,9 @@ import TimelineControl from "@/components/TimelineControl"
 import FamilyMetrics from "@/components/FamilyMetrics"
 import EventsList from "@/components/EventsList"
 import { toast } from "sonner"
+import { mockFamilies } from "@/lib/maps"
+
+type EventType = 'birth' | 'health' | 'migration'
 
 export default function Dashboard() {
   const [activeView, setActiveView] = useState("herd-tracking")
@@ -23,10 +26,13 @@ export default function Dashboard() {
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [timeRange, setTimeRange] = useState([new Date("2023-01-01"), new Date("2023-12-31")])
+  const [selectedEventTypes, setSelectedEventTypes] = useState<Set<EventType>>(new Set())
+  const [showLocationHistory, setShowLocationHistory] = useState(false)
 
-  // Mock data - TODO: come from an API
-  const herds = ["Herd Alpha", "Herd Beta", "Herd Gamma"]
-  const families = ["Family A-1", "Family A-2", "Family B-1", "Family G-1"]
+  const herds = Array.from(new Set(mockFamilies.map(family => family.herdId)))
+  const families = mockFamilies
+    .filter(family => !selectedHerd || family.herdId === selectedHerd)
+    .map(family => family.id)
 
   const handleLocationSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,12 +43,78 @@ export default function Dashboard() {
     setSelectedLocation({ lat: 34.0522, lng: -118.2437 })
   }
 
+  const toggleEventType = (type: EventType) => {
+    setSelectedEventTypes(prev => {
+      const next = new Set(prev)
+      if (next.has(type)) {
+        next.delete(type)
+      } else {
+        next.add(type)
+      }
+      return next
+    })
+  }
+
+  // Get all events for the selected herd/family
+  const getFilteredEvents = () => {
+    let filteredFamilies = mockFamilies
+
+    if (selectedHerd) {
+      filteredFamilies = filteredFamilies.filter(f => f.herdId === selectedHerd)
+    }
+    if (selectedFamily) {
+      filteredFamilies = filteredFamilies.filter(f => f.id === selectedFamily)
+    }
+
+    const events = filteredFamilies.flatMap(family => 
+      family.locations
+        .filter(loc => loc.events)
+        .flatMap(loc => 
+          (loc.events || [])
+            .filter(event => selectedEventTypes.size === 0 || selectedEventTypes.has(event.type as EventType))
+            .map(event => ({
+              ...event,
+              familyId: family.id,
+              herdId: family.herdId,
+              date: loc.date,
+              location: { lat: loc.lat, lng: loc.lng }
+            }))
+        )
+    )
+
+    return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  // Get location history for the selected herd/family
+  const getLocationHistory = () => {
+    let filteredFamilies = mockFamilies
+
+    if (selectedHerd) {
+      filteredFamilies = filteredFamilies.filter(f => f.herdId === selectedHerd)
+    }
+    if (selectedFamily) {
+      filteredFamilies = filteredFamilies.filter(f => f.id === selectedFamily)
+    }
+
+    return filteredFamilies.flatMap(family => 
+      family.locations.map(loc => ({
+        familyId: family.id,
+        herdId: family.herdId,
+        date: loc.date,
+        location: { lat: loc.lat, lng: loc.lng }
+      }))
+    ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  const filteredEvents = getFilteredEvents()
+  const locationHistory = getLocationHistory()
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Herd Tracking Dashboard</h1>
-          <p className="text-muted-foreground">Monitor herds, families, and events over time</p>
+          <h1 className="text-3xl font-bold">Wildlife Tracker Dashboard</h1>
+          <p className="text-muted-foreground">Monitor herds, families, and events over time.</p>
         </div>
         <div className="flex items-center gap-2">
           <form onSubmit={handleLocationSearch} className="flex gap-2">
@@ -157,23 +229,77 @@ export default function Dashboard() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Event Types</label>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="cursor-pointer">
+                  <Badge 
+                    variant={selectedEventTypes.has('birth') ? "default" : "outline"} 
+                    className="cursor-pointer"
+                    onClick={() => toggleEventType('birth')}
+                  >
                     Birth
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
+                  <Badge 
+                    variant={selectedEventTypes.has('health') ? "default" : "outline"} 
+                    className="cursor-pointer"
+                    onClick={() => toggleEventType('health')}
+                  >
+                    Health Issue
+                  </Badge>
+                  <Badge 
+                    variant={selectedEventTypes.has('migration') ? "default" : "outline"} 
+                    className="cursor-pointer"
+                    onClick={() => toggleEventType('migration')}
+                  >
                     Migration
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    Split
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    Merge
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    Health Issue
+                  <Badge 
+                    variant={showLocationHistory ? "default" : "outline"} 
+                    className="cursor-pointer"
+                    onClick={() => setShowLocationHistory(!showLocationHistory)}
+                  >
+                    Location History
                   </Badge>
                 </div>
               </div>
+
+              {filteredEvents.length > 0 && !showLocationHistory && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Filtered Events ({filteredEvents.length})</label>
+                  <div className="max-h-[200px] overflow-y-auto space-y-2">
+                    {filteredEvents.map((event, index) => (
+                      <div key={index} className="text-sm p-2 bg-muted rounded">
+                        <p className="font-medium">{event.type.charAt(0).toUpperCase() + event.type.slice(1)}</p>
+                        <p className="text-muted-foreground">{event.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {event.familyId} • {new Date(event.date).toLocaleDateString()}
+                        </p>
+                        {event.type === 'migration' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Location: {event.location.lat.toFixed(4)}, {event.location.lng.toFixed(4)}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {showLocationHistory && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Location History ({locationHistory.length})</label>
+                  <div className="max-h-[200px] overflow-y-auto space-y-2">
+                    {locationHistory.map((loc, index) => (
+                      <div key={index} className="text-sm p-2 bg-muted rounded">
+                        <p className="font-medium">{loc.familyId}</p>
+                        <p className="text-muted-foreground">
+                          Lat: {loc.location.lat.toFixed(4)}, Lng: {loc.location.lng.toFixed(4)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(loc.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
