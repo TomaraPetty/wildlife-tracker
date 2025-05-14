@@ -134,7 +134,7 @@ export default function Dashboard() {
       </header>
 
       <Tabs defaultValue="herd-tracking" onValueChange={setActiveView} className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-4">
           <TabsTrigger value="herd-tracking">
             <Users className="mr-2 h-4 w-4" />
             <span className="hidden md:inline">Herd Tracking</span>
@@ -151,7 +151,7 @@ export default function Dashboard() {
             <MapPin className="mr-2 h-4 w-4" />
             <span className="hidden md:inline">Location Events</span>
           </TabsTrigger>
-          <TabsTrigger value="ranger-submit">
+          <TabsTrigger className="ml-2" value="ranger-submit">
             <MapPin className="mr-2 h-4 w-4" />
             <span className="hidden md:inline">Submit Event</span>
           </TabsTrigger>
